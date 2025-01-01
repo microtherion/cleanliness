@@ -16,16 +16,13 @@ handle_depth       = 17; // [5:50:.5]
 handle_height	   = 18; // [5:50:.5]
 
 // Height of ridge [mm]
-handle_ridge       =  5; // [0:10:1]
+handle_ridge       =  3; // [0:10:1]
 
 // Width of sign [mm]
 sign_width         = 70; // [20:100:5]
 
 // Height of sign [mm]
-sign_height        = 25; // [10:100:5]
-
-// Overhang [deg]
-overhang           = 30; // [10:70:10]
+sign_height        = 35; // [10:100:5]
 
 // Element thickness [mm]
 thickness          =  3; // [1:5:.5]
@@ -39,8 +36,14 @@ back_text          = "Dirty";
 // Text size
 text_size          = 18; // [7:80:1]
 
+// Text position
+text_pos           = 0.6; // [0.2:0.8:0.1]
+
+// Slope [deg]
+slope              = 30; // [0:75:5]
+
 half_thickness     = thickness*0.5;
-text_thickness     = 0.5;
+text_thickness     = 0.5+half_thickness;
 
 module handle() {
     hw = 0.5*handle_width;
@@ -76,17 +79,18 @@ module handle() {
 module sign() {
     hw = 0.5*handle_width;
     sw = 0.5*sign_width;
-    oh = (sw-hw)*sin(overhang);
+    sh = sign_height*cos(slope);
+    sd = sign_height*sin(slope);
     hull() {
-        translate([-hw, 0, half_thickness])                sphere(d=thickness);
-        translate([ hw, 0, half_thickness])                sphere(d=thickness);
-        translate([-sw, 0, half_thickness+oh])             sphere(d=thickness);
-        translate([ sw, 0, half_thickness+oh])             sphere(d=thickness);
-        translate([-sw, 0, half_thickness+oh+sign_height]) sphere(d=thickness);
-        translate([ sw, 0, half_thickness+oh+sign_height]) sphere(d=thickness);
+        translate([-sw,   0, half_thickness])      sphere(d=thickness);
+        translate([ sw,   0, half_thickness])      sphere(d=thickness);
+        translate([-sw,  sd, half_thickness+sh]) sphere(d=thickness);
+        translate([ sw,  sd, half_thickness+sh]) sphere(d=thickness);
+        translate([-sw, -sd, half_thickness+sh]) sphere(d=thickness);
+        translate([ sw, -sd, half_thickness+sh]) sphere(d=thickness);
     }
-    translate([0, -half_thickness, oh+0.5*sign_height]) rotate([90, 180, 0]) linear_extrude(text_thickness) text(front_text, font="Helvetica;style=bold", size=text_size, halign="center", valign="center");
-    translate([0,  half_thickness, oh+0.5*sign_height]) rotate([90, 180, 180]) linear_extrude(text_thickness) text(back_text, font="Helvetica;style=bold", size=text_size, halign="center", valign="center");
+    translate([0, -text_pos*sd, text_pos*sh]) rotate([90-slope, 180, 0]) linear_extrude(text_thickness) text(front_text, font="Helvetica;style=bold", size=text_size, halign="center", valign="center");
+    translate([0,  text_pos*sd, text_pos*sh]) rotate([90-slope, 180, 180]) linear_extrude(text_thickness) text(back_text, font="Helvetica;style=bold", size=text_size, halign="center", valign="center");
 }
 
 module cleanliness() {
